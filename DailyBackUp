@@ -1,0 +1,30 @@
+#DailyBackUp
+
+
+import maya.cmds as cmds
+import time
+import os
+
+Day = time.strftime('%d')
+Year = time.strftime('_%Y').replace(time.strftime('_%Y')[0:3],'_')
+Date = time.strftime('%d_%B')
+DateToday = Date+Year
+ScencePath = cmds.file(query=True,sceneName=True)
+SceneName = ScencePath.split('/')[-1]
+Episode = ScencePath.split('/')[3].upper()
+BackupDir = 'D:/ShotBackup/%s/%s' %(Episode,DateToday)
+
+print DateToday
+
+if os.path.exists(BackupDir):
+    print('This is not the 1st file backup today')
+else:
+    cmds.sysFile(BackupDir,makeDir=True)
+    print('NewDir created!!')
+    
+if os.path.exists(BackupDir+'/'+SceneName):
+    cmds.sysFile(ScencePath,copy=BackupDir+'/'+SceneName)
+    cmds.warning('BackUp File Replaced')
+else:
+    cmds.sysFile(ScencePath,copy=BackupDir+'/'+SceneName)
+    cmds.warning('File Has Been BackUp')
