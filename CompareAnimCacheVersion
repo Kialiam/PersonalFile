@@ -1,0 +1,60 @@
+import os, sys
+sys.path.append('//192.168.5.253/BBB_main/bbb/t/software/bubblebathbay/defaultMayaEnv/site-packages/')
+from PyQt4 import QtCore, QtGui
+import json
+
+class CompareCacheVersion_UI(QtGui.QWidget):
+    def __init__(self, parent=None):
+        super(CompareCacheVersion_UI, self).__init__(parent)
+        self.initUi()
+        
+    def initUi(self):
+        
+        #    Episode UIs
+        ep_label = QtGui.QLabel("Episode: ")
+        self.ep_line_edit = QtGui.QLineEdit()
+        
+        #    Buttons
+        self.ep_button = QtGui.QPushButton("Compare Anim Cache version")
+        self.ep_button.clicked.connect(self.ep_button_command)
+        
+        #    List
+        self.list_widget = QtGui.QListWidget()
+        
+        #    Layout UIs
+        ep_layout = QtGui.QHBoxLayout()
+        ep_layout.addWidget(ep_label)
+        ep_layout.addWidget(self.ep_line_edit)
+        
+        master_layout = QtGui.QVBoxLayout()
+        master_layout.addLayout(ep_layout)
+        master_layout.addWidget(self.ep_button)
+        master_layout.addWidget(self.list_widget)
+        
+        #    UI default function calls
+        self.setLayout(master_layout)
+        self.setWindowTitle("Compare anim cache versions")
+
+    def ep_button_command(self):
+        episode = self.ep_line_edit.text()
+        path = "I:/bubblebathbay/episodes/ep%s" % episode
+        log_file = "%s/anim_caches_version.log" % path
+        if os.path.exists(log_file):
+            log = open(log_file, "rb")
+            obj = json.load(log)
+            for key, value in obj.iteritems():
+                current_cache_ver = value.split("\\")[-1]
+                anim_cache_path = value.split("\\")[0]
+                latest_cache_ver = sorted(os.listdir(anim_cache_path))[-1]
+                if current_cache_ver >= latest_cache_ver:
+                    pass
+                else:
+                    self.list_widget.addItem("%s, current_version: %s, latest_version: %s" % (key,current_cache_ver, latest_cache_ver))
+        else:
+            QtGui.QMessageBox.warning(self, "Warning", ("No file name anim_caches_version.log in directory %s" % path), buttons=QtGui.QMessageBox.Ok, defaultButton=QtGui.QMessageBox.NoButton)
+
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+    compare_cache_version = CompareCacheVersion_UI()
+    compare_cache_version.show()
+    app.exec_()
