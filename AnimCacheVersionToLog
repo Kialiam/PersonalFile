@@ -1,0 +1,50 @@
+import maya.cmds as cmds
+import sys, os
+
+def animCacheVersionToLog():
+    try:
+        listAnimCacheHrc = cmds.ls('ABC_ANIM_CACHES_hrc*')
+        versions = []
+        for each in listAnimCacheHrc:
+            try:
+                v= cmds.getAttr('%s.version' % each)
+                versions.append(v)
+            except:
+                cmds.warning("%s doesn't have any attribute called version" % each)
+        latestVersion = sorted(versions)[-1]
+        
+        file_path = cmds.file(query=True, sceneName=1)
+        abc_cache_path = os.path.join(file_path.split("Light")[0], "Anm/publish/alembic_anim")
+
+        episode_name = file_path.split('/')[-6]
+        shot_name = file_path.split('/')[-5]
+        epPath = file_path.split(shot_name)[0]
+        log_info_dict = {shot_name: os.path.join(abc_cache_path, latestVersion)}
+        if os.path.exists(abc_cache_path):
+            log_path = os.path.join(epPath, "anim_caches_version.log")
+            if not os.path.exists(log_path):
+                log = open(log_path, 'wb')
+                json.dump(log_info_dict, log)
+                log.close()
+            else:
+                log = open(log_path, 'rb')
+                log_info = json.load(log)
+                log.close()
+
+                if log_info.has_key(shot_name):
+                    if log_info[shot_name] > os.path.join(abc_cache_path, latestVersion):
+                        print "Less then"
+                    elif log_info[shot_name] < os.path.join(abc_cache_path, latestVersion):
+                        new_log = open(log_path, 'wb')
+                        log_info[shot_name] = os.path.join(abc_cache_path, latestVersion)
+                        json.dump(log_info, new_log)
+                        new_log.close()
+                    else:
+                        print "Using latest version of caches in Lighting"
+                else:
+                    log_info.append(log_info_dict)
+                    new_log = open(log_path, 'wb')
+                    json.dump(log_info, new_log)
+                    new_log.close()
+    except:
+        cmds.warning("No Anim cache in the scene")
