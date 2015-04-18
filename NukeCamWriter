@@ -1,0 +1,89 @@
+import os
+import maya.cmds as cmds
+sys.path.append('//192.168.5.253/BBB_main/bbb/t/bubblebathbay_APPDIR/bbb_kialiam/2013.5-x64/scripts')
+import Maya2Nuke
+reload(Maya2Nuke)
+try:
+    Maya2Nuke.maya2nuke()
+except:
+    pass
+
+result = cmds.promptDialog(title='Episode',message='Example:\n"ep000"',button=['OK' , 'Cancel'],defaultButton='OK',cancelButton='Cancel',dismissString='Cancel')
+Epi = cmds.promptDialog(query=True, text=True).lower()  if result == 'OK' else cmds.error( "No text" )
+if not "ep" in Epi:
+    cmds.warning("something wrong"); cmds.error( "wrong format" )
+        
+x = 0               
+
+lenOfShot = cmds.promptDialog(title='TotalShot',message='Example:\n"156"',button=['OK' , 'Cancel'],defaultButton='OK',cancelButton='Cancel',dismissString='Cancel')
+y = int(cmds.promptDialog(query=True, text=True)) if lenOfShot == 'OK' else cmds.error( "No text" )
+y= y+1
+
+report = []
+path = 'K:/bubblebathbay/episodes/%s/NukeCams/' %(Epi)
+dirPath = filter(lambda x: ".nk" in x and "ep" in x,os.listdir('D:/') )    
+
+##funtionStart
+if os.path.exists(path):
+    print('This is not the 1st Update cam')
+else:
+    cmds.sysFile(path,makeDir=True)
+    print('NewDir created!!')
+    
+cmds.playbackOptions( minTime='1', maxTime='489' )#Frame
+cmds.currentUnit( time='pal' )
+    
+Num = 0
+cameraPath = 'I:/bubblebathbay/episodes/%s/' %Epi
+
+for x in range(x,y):
+    text = None
+    Num = Num+1
+    if os.path.exists(cameraPath+Epi+'_sh%.3d/Anm/publish/cam/' %int(Num)):
+        versionFolder = os.listdir(cameraPath+Epi+'_sh%.3d/Anm/publish/cam/' %int(Num))
+        print(versionFolder)
+        try:
+            camFolder = reduce(lambda a,b: a if int(a.strip("v")) > int(b.strip("v")) else b ,versionFolder)
+        except:
+            report.append(Epi+"_sh%.3d don't have Camera Published" %int(Num))
+            next      
+        print(camFolder)
+        LatestFilePath = cameraPath+Epi+'_sh%.3d/Anm/publish/cam/' %int(Num)+camFolder
+        if os.path.exists(LatestFilePath):
+            try:
+                fileName = filter(lambda x: ".ma" in x,os.listdir(LatestFilePath))[0]
+                cmds.file(LatestFilePath+"/"+fileName, i=True)
+            except:
+                next
+            else:
+                report.append(Epi+"_sh%.3d don't have Camera Published" %int(Num))
+                next
+        
+    ##generate Nuke file        
+            print("this is "+fileName.split(".")[0])
+            cmds.select('%s*' %fileName.split(".")[0])
+            Maya2Nuke.getAllCamera(cmds.ls(sl=True))
+            Maya2Nuke.generator()
+            text = cmds.cmdScrollFieldExecuter('copytext' ,q=1,t=1)
+            if not text :
+                cmds.warning("%s import error" %cmds.ls(sl=True))
+                #return
+            else:
+                #if fileName.split(".")[0] in dirPath:
+                cmds.sysFile( path+'/%s' %(filter(lambda x: fileName.split(".")[0] in x , dirPath)), delete=True)# Windows
+                f = open(path+'/%s.nk' %(fileName.split(".")[0]+"_"+fileName.split(".")[1]),'w')
+                f.write(text)
+                f.close
+
+if not text :
+    cmds.warning("%s import error" %cmds.ls(sl=True))
+    #return
+else:
+    f = open(path+'%s.nk' %(fileName.split(".")[0]+"_"+fileName.split(".")[1]),'w')
+    f.write(text)
+    f.close
+    
+for x in report:
+    print(x)
+
+
