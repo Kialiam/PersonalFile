@@ -1,0 +1,9 @@
+	if cmds.objExists("*shotCam*") == True:
+		print '"cam is here!!"'
+		mel.eval("lookThroughModelPanel "+cam[0]+" modelPanel4")
+		cmds.setAttr(cam[0]+'.renderable',1)
+		cmds.setAttr('perspShape.renderable',0)
+		cmds.setAttr('topShape.renderable',0)
+		cmds.setAttr('sideShape.renderable',0)
+		cmds.setAttr('frontShape.renderable',0)  
+	mel.eval("lookThroughModelPanel persp modelPanel1") 
