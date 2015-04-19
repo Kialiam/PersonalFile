@@ -1,0 +1,59 @@
+
+
+if len(cmds.ls(sl=True)) == 1:
+    
+    SelectedOBJ = cmds.ls(sl=True,l=True,type='transform')[0]
+    originalENG = cmds.listConnections(cmds.listRelatives(SelectedOBJ,ad=True,type="mesh")[0],type='shadingEngine')[0]      
+    originalSHD = filter(lambda x: "Condition" in x or cmds.nodeType(x)=='core_material',cmds.listConnections(originalENG))[0]
+    if cmds.nodeType(originalSHD)=='core_material':
+        EnginePlug = cmds.listConnections(originalSHD,type='shadingEngine',plugs=True,d = True,s =True)[0]
+        MaterialPlug= cmds.listConnections(originalENG,type='core_material',plugs=True,d = True,s =True)[0]
+        ###################################
+        ## create source
+        Condition = cmds.shadingNode('condition', asUtility = True )
+        cmds.rename(Condition,originalSHD+'_Condition')
+        sampleInfo = cmds.shadingNode('samplerInfo', asUtility = True )
+        cmds.rename(sampleInfo,originalSHD+'_Info')        
+        BlockSSHD = mel.eval('mrCreateCustomNode -asShader "" core_surface_shader;')
+        cmds.rename(BlockSSHD,originalSHD+'_BlockSSHD')
+        cmds.rename(cmds.listConnections(originalSHD+'_BlockSSHD',type='shadingEngine')[0],originalSHD+'_BlockSSHDSG')
+        cmds.setAttr(originalSHD+"_BlockSSHD.output_override",1)
+        
+        ###################################
+        ## set up connection
+        cmds.connectAttr("%s.outValue" %originalSHD, originalSHD+'_Condition.colorIfTrue', f=True)
+        cmds.connectAttr(originalSHD+'_BlockSSHD.outValue', originalSHD+'_Condition.colorIfFalse', f=True)       
+        cmds.connectAttr(originalSHD+'_Info.flippedNormal',originalSHD+'_Condition.firstTerm')
+        for x in cmds.listConnections(MaterialPlug):    
+            cmds.disconnectAttr(MaterialPlug,x)
+        cmds.connectAttr(originalSHD+'_Condition.message', originalENG+'.surfaceShader', f=True)
+        
+        cmds.sets(SelectedOBJ, e=True, forceElement=originalENG)
+        cmds.select(SelectedOBJ)
+        cmds.warning("term 1")
+    elif "Condition" in originalSHD:
+        
+        HoldOutPlug = originalSHD.split("_Condition")[0]+'_BlockSSHD.outValue'
+        ShaderPlug = originalSHD.split("_Condition")[0]+'.outValue'
+        Condition_F = originalSHD+".colorIfFalse"
+        Condition_T = Condition_F.replace("colorIfFalse",'colorIfTrue')
+        if "False" in cmds.listConnections(HoldOutPlug,type="condition",plugs=True)[0]:
+            cmds.warning("term 2")
+            cmds.disconnectAttr(HoldOutPlug,Condition_F)
+            cmds.disconnectAttr(ShaderPlug,Condition_T)
+            cmds.connectAttr(HoldOutPlug,Condition_T)
+            cmds.connectAttr(ShaderPlug,Condition_F)
+        else:
+            cmds.warning("term 0")
+            cmds.delete(originalSHD.split("_Condition")[0]+'_BlockSSHD')
+            cmds.delete(originalSHD.split("_Condition")[0]+'_Info')
+            cmds.delete(originalSHD.split("_Condition")[0]+'_Condition')
+            cmds.connectAttr(originalSHD.split("_Condition")[0]+'.message', originalENG+'.miMaterialShader', f=True)
+                  
+                        
+else:
+    cmds.warning('please select only one OBJ...')
+    
+#print cmds.layoutDialog(ui=checkboxPrompt)
+    
+
