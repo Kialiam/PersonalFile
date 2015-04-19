@@ -1,0 +1,1 @@
+cmds.uvLink(uvSet = 'LittleTown_West_10_geo.uvSet[1].uvSetName', texture = 'LittleTown_West_LND_hrc_LittleTown_West_LND_littletown_alpha_TGA_FileIn')
