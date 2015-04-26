@@ -21,11 +21,14 @@ if len(cmds.ls(sl=True)) == 1:
         
         ###################################
         ## set up connection
+        for x in cmds.listConnections(MaterialPlug,p=True):
+            try:    
+                cmds.disconnectAttr(MaterialPlug,x)
+            except:
+                pass
         cmds.connectAttr("%s.outValue" %originalSHD, originalSHD+'_Condition.colorIfTrue', f=True)
         cmds.connectAttr(originalSHD+'_BlockSSHD.outValue', originalSHD+'_Condition.colorIfFalse', f=True)       
         cmds.connectAttr(originalSHD+'_Info.flippedNormal',originalSHD+'_Condition.firstTerm')
-        for x in cmds.listConnections(MaterialPlug):    
-            cmds.disconnectAttr(MaterialPlug,x)
         cmds.connectAttr(originalSHD+'_Condition.message', originalENG+'.surfaceShader', f=True)
         
         cmds.sets(SelectedOBJ, e=True, forceElement=originalENG)
@@ -56,4 +59,3 @@ else:
     
 #print cmds.layoutDialog(ui=checkboxPrompt)
     
-
