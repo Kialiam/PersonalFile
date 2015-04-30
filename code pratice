@@ -1,0 +1,150 @@
+
+# def reverse(text):
+#   List = list(text)
+#   RList = range(len(text))
+#   Num = len(List)
+#   answer = ""
+#   for x,y in zip(List,range(len(List))):
+#       RList[(y * -1 ) + len(List)-1] = x
+#   for x in RList:
+#       answer += x 
+#   return answer
+
+
+# print reverse("kjdlksajlkda")
+
+# # range(len(List))
+# # #print type(len([1,2,3,4,5]))
+# # print reduce(lambda x,y: x+y  ,['k', 'j', 'd', 'l', 'k', 's', 'a', 'j', 'l', 'k', 'd', 'a'])
+
+# # kk = [x for x in "kjdlksajlkda"]
+# # print kk
+
+
+# def anti_vowel(text):
+#   vowel = ['a','e','i','o','u']
+#   index = []
+#   kk = list(text)
+#   #answer = []
+#   for x,y in zip(text,range(len(text))):
+#       for i in vowel:
+#           if i == x.lower():
+#               index.append(y)
+#               print i
+#   print index
+#   for x in index:
+#       kk.remove(text[x])
+#       print x
+#   kk = ''.join(kk)
+#   return kk
+
+# print anti_vowel("iukokodsakl")
+# # print '_'.join(['sd','ds','ds'])
+
+
+# score = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2, 
+#        "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3, 
+#        "l": 1, "o": 1, "n": 1, "q": 10, "p": 3, "s": 1, 
+#        "r": 1, "u": 1, "t": 1, "w": 4, "v": 4, "y": 4, 
+#        "x": 8, "z": 10}
+		 
+# def scrabble_score(word):
+#   score = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2, 
+#        "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3, 
+#        "l": 1, "o": 1, "n": 1, "q": 10, "p": 3, "s": 1, 
+#        "r": 1, "u": 1, "t": 1, "w": 4, "v": 4, "y": 4, 
+#        "x": 8, "z": 10}
+		 
+#   count = []
+#   for alpha in word:
+#       print alpha
+#       for key in score:
+#           print key
+#           if alpha.lower() == key:
+#               count.append(score[key])
+#   count = sum(count)          
+#   return count
+
+# print scrabble_score("Kialiam")
+
+# for key, value in score:
+#   print value
+
+
+# def censor(text,word):
+#   lenght = len(word)
+#   asterisk = "".join(["*"]*lenght)
+#   if word in text:
+#       new_text = text.replace(word,asterisk)
+#       return new_text
+
+# print(censor("kialiam kialiam", "iam"))
+
+# kk = "dklkaooak"
+# ll = list(kk).count("k")
+# print ll
+
+# def count(sequence,item):
+#   count = []
+#   if type(item) != list:
+#       for x in sequence:
+#           print x
+#           if str(x) == str(item):
+#               count.append(item)
+#   return len(count)
+		
+
+
+# print count([1,"d","l","l","l","l"],"l")
+
+# def product(numlist):
+#     product = reduce(lambda a,b: a*b , numlist)
+#     return product
+
+# print product(range(1,7))
+
+# newlist = []
+
+# print len(newlist)
+# for x in [4,5,5,4,3]:
+# 	num = 1
+# 	if len(newlist) != 0:
+# 		for i in newlist:
+# 			if x != i:
+# 				num *= 1
+# 			else:
+# 				num *= 0
+# 		if num == 1:
+# 			newlist.append(x)
+# 	else:
+# 		newlist.append(x)
+# 		#print x
+
+# print newlist
+
+
+# def remove_duplicates(number):
+# 	newlist = []
+# 	for x in number:
+# 		num = 1
+# 		if len(newlist) != 0:
+# 			for i in newlist:
+# 				if x != i:
+# 					num *= 1
+# 				else:
+# 					num *= 0
+# 			if num == 1:
+# 				newlist.append(x)
+# 		else:
+# 			newlist.append(x)
+# 	return newlist
+
+			
+# def median(num):
+# 	num.sort()
+# 	if len(num)%2 != 0:
+# 		return num[(len(num)/2)]
+# 	else:
+# 		return( float(num[len(num)/2]) + float(num[(len(num)/2)-1]) ) /2
+		
+# print median(range(1,5))
