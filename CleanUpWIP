@@ -1,0 +1,428 @@
+
+
+import maya.cmds as cmds
+import os   
+
+LightLead = 'deepesh'
+
+LightTeam = [
+'bbb_kialiam',
+'jasonpua',
+'bbb_vincentl',
+'bbb_huiling',
+'bbb_flyantan',
+'bbb_andyp',
+'bbb_haridharan',
+'bbb_michelec',
+'bbb_ruyi',
+'bbb_briann',
+'ttkarleong',
+'bbb_leonloong',
+'bbb_safwan',
+'bbb_hadi',
+'bbb_mine',
+'bbb_han',
+'timothy',
+'bbb_himanshu',
+'bbb_yogalee',
+'bbb_alireza',
+'bbb_selvarajan',
+'bbb_leongan',
+'bbb_jiunhao',
+'bbb_melisac',
+'bbb_melisacheah',
+'bbb_sylviay',
+'bbb_anthonyp',
+'2bbb_melisac',
+'bbb_shuntian',
+'ttjiayi',
+'ttmaysan',
+'ttmoses',
+'ttpawxuan',
+'tttingli',
+'bbb_budhi',
+'ttlydiak',
+'ttjiahoe',
+'ttzhongyan'
+]
+
+
+
+bbbLightTools = '/bbbLightTools.py'
+bbbLightToolsUI = '/bbbLightToolsUI.py'
+FixShelf = '/shelf_Fix.mel'
+
+for member in LightTeam:
+	DirPathTgrt = 'T:/bubblebathbay_APPDIR/'+member+'/2013.5-x64/scripts'
+	DirPathSrch = 'T:/bubblebathbay_APPDIR/'+LightLead+'/2013.5-x64/scripts'
+	DirPathFixSrch = 'T:/bubblebathbay_APPDIR/bbb_kialiam/2013.5-x64/prefs/shelves'
+	DirPathFixTgrt = 'T:/bubblebathbay_APPDIR/'+member+'/2013.5-x64/prefs/shelves'
+	#PresetDirPathTgrt = 'T:/bubblebathbay_APPDIR/'+member+'/2013.5-x64/presets/attrPresets'
+	#PresetDirPathSrch = 'T:/bubblebathbay_APPDIR/'+LightLead+'/2013.5-x64/presets/attrPresets'
+
+	if os.path.exists(DirPathTgrt): 
+		print(member+"'s script updated")
+		cmds.sysFile(DirPathSrch+bbbLightTools,copy=DirPathTgrt+bbbLightTools)
+		cmds.sysFile(DirPathSrch+bbbLightToolsUI,copy=DirPathTgrt+bbbLightToolsUI)
+		#cmds.sysFile(PresetDirPathSrch,copy=PresetDirPathTgrt)
+	if not "bbb_kialiam" in member:
+		cmds.sysFile(DirPathFixSrch+FixShelf,copy=DirPathFixTgrt+FixShelf)
+	else:
+		print(member+' dont have the DirPath!!')
+
+
+
+
+##assign matt_Ripple##
+import maya.mel as mel
+import maya.cmds as cmds
+kkk=cmds.ls(sl=True)
+cmds.sets(kkk, e=True, forceElement='RSHD_matte_rippleSG')
+
+
+
+##create holdOut material
+import maya.cmds as cmds
+PHoldOut=mel.eval('mrCreateCustomNode -asShader "" core_material;')
+cmds.rename(PHoldOut,'FIX_PHoldOut')
+cmds.rename(cmds.listConnections('FIX_PHoldOut',type='shadingEngine')[0],'FIX_PHoldOutSG')
+cmds.setAttr('FIX_PHoldOut.output_override',1)
+#setAttr "core_material6.en_refl" 1;
+
+
+##create FakeOcean material
+for x in ['FIX_OceanReflect*','*FIX_OceanBlock*','FIX_OceanReflectSG','fakeOceanPlane_geo']:
+	try:
+		cmds.delete(x)
+	except:
+		pass
+OceanReflect=mel.eval('mrCreateCustomNode -asShader "" core_mia_material;')
+cmds.rename(OceanReflect,'FIX_OceanBlock')
+cmds.rename(cmds.listConnections('FIX_OceanBlock',type='shadingEngine')[0],'FIX_OceanReflectSG')
+cmds.polyPlane(n='fakeOceanPlane_geo', sx=2, sy=2, w=80, h=80)
+cmds.select('fakeOceanPlane_geo');cmds.move(0,-0.3,0)
+#cmds.move(10, 0, 10,'fakeOceanPlane_geo')
+cmds.sets('fakeOceanPlane_geoShape', e=True, forceElement='FIX_OceanReflectSG')
+#mel.eval('setAttr "FIX_OceanReflect.diffuse" -type double3 0 0.353333 0.4 ;')
+cmds.setAttr("FIX_OceanBlock.diffuse",0,0,0,type='double3')
+cmds.setAttr('FIX_OceanBlock'+".output_override", 1)
+##create Ocean reflection material
+cmds.rename('FIX_OceanBlock','FIX_OceanReflect')
+cmds.connectAttr('ocean_dispShader.displacement','FIX_OceanReflectSG.displacementShader')
+cmds.setAttr('FIX_OceanReflect.output_override',0)
+cmds.setAttr("FIX_OceanReflect.reflectivity", 1)
+cmds.setAttr("FIX_OceanReflect.refl_gloss", 0.55)
+cmds.setAttr("FIX_OceanReflect.refl_depth", 1)
+cmds.setAttr("FIX_OceanReflect.skip_inside_refl", 0)
+cmds.setAttr('FIX_OceanReflect'+".output_override", 1)
+##off others unused
+mel.eval('setAttr "FIX_OceanReflect.refr_color" -type double3 0 0 0 ;')
+mel.eval('setAttr "FIX_OceanReflect.diffuse"  -type double3 0 0 0;')
+cmds.setAttr("FIX_OceanReflect.transparency", 0)
+cmds.setAttr("FIX_OceanReflect.refr_gloss", 0)
+cmds.setAttr("FIX_OceanReflect.refr_gloss_samples", 0)
+cmds.setAttr("FIX_OceanReflect.en_occlusion", 0)
+
+tt=cmds.listRelatives(cmds.ls(sl=True),ad=True,type='mesh',fullPath=True)
+
+
+
+##ExtendOcean
+##create ExtendOcean material
+for x in ['FIX_OceanReflect*','*FIX_OceanBlock*','FIX_OceanReflectSG','fakeOceanPlane_geo','matte_ExtendOcean']:
+	try:
+		cmds.delete(x)
+	except:
+		pass
+OceanReflect=mel.eval('mrCreateCustomNode -asShader "" core_mia_material;')
+cmds.rename(OceanReflect,'FIX_OceanReflect')
+cmds.rename(cmds.listConnections('FIX_OceanReflect',type='shadingEngine')[0],'FIX_OceanReflectSG')
+cmds.polyPlane(n='fakeOceanPlane_geo', sx=2, sy=2, w=80, h=80)
+cmds.select('fakeOceanPlane_geo');cmds.move(0,-0.3,0)
+cmds.sets('fakeOceanPlane_geoShape', e=True, forceElement='FIX_OceanReflectSG')
+
+cmds.setAttr("FIX_OceanReflect.diffuse",0,0.34,0.4,type='double3')
+cmds.setAttr('FIX_OceanReflect.diffuse_weight',0.6)
+cmds.setAttr('FIX_OceanReflect.diffuse_roughness',0.4)
+cmds.setAttr('FIX_OceanReflect.refr_ior',1.333)
+cmds.setAttr('FIX_OceanReflect.refr_depth', 1)
+cmds.setAttr('FIX_OceanReflect.brdf_fresnel', 1)
+cmds.setAttr('FIX_OceanReflect.single_env_sample', 1)
+cmds.setAttr('FIX_OceanReflect.en_occlusion', 1)
+cmds.setAttr('FIX_OceanReflect.ao_enable_overrides', 1)
+cmds.setAttr('FIX_OceanReflect.ao_override_spread', 60)
+cmds.setAttr('FIX_OceanReflect.ao_override_spread', 8)
+
+cmds.setAttr('FIX_OceanReflect.output_override',0)
+cmds.setAttr("FIX_OceanReflect.reflectivity", 1)
+cmds.setAttr("FIX_OceanReflect.refl_gloss", 0.55)
+cmds.setAttr("FIX_OceanReflect.refl_depth", 1)
+cmds.setAttr("FIX_OceanReflect.skip_inside_refl", 0)
+
+##off unused
+mel.eval('setAttr "FIX_OceanReflect.refr_color" -type double3 0 0 0 ;')
+cmds.setAttr("FIX_OceanReflect.transparency", 0)
+cmds.setAttr("FIX_OceanReflect.refr_gloss", 0)
+cmds.setAttr("FIX_OceanReflect.refr_gloss_samples", 0)
+
+cmds.connectAttr("fakeOceanPlane_geo.message","matte_water.linked_objs[1]",force = True)
+matte_node = mapi.create_pass( 'Matte', n = "matte_ExtendOcean" )
+cmds.setAttr('matte_ExtendOcean.en_obj_linking', 1)
+cmds.connectAttr("fakeOceanPlane_geo.message","matte_ExtendOcean.linked_objs[0]",force = True)
+mapi.associate_pass("matte_ExtendOcean", 'defaultRenderLayer')
+
+
+
+
+
+
+##==HoldOutGroup
+if cmds.ls(sl=True)==[]:
+	cmds.warning("Please select transform or mesh")
+else:
+	for x in cmds.listRelatives(cmds.ls(sl=True),ad=True,type='mesh',fullPath=True):
+		ShdEng=cmds.listConnections(x,type='shadingEngine')
+		for x in ShdEng:
+			if cmds.nodeType(x)=='shadingEngine':
+				CoreM = cmds.listConnections(ShdEng)
+				for i in CoreM:
+					if cmds.nodeType(i)=='core_material' or cmds.nodeType(i)=='core_surface_shader':
+						cmds.setAttr(i+".output_override",1)
+						
+
+					
+
+
+
+## Find Primary HoldOut Obj
+HoldOutSHD = []
+AllSHD = cmds.ls(type="core_material")+cmds.ls(type="core_surface_shader")
+MeshOBJ = []
+
+for x in AllSHD:
+	if cmds.getAttr(x+".output_override")==1:
+		HoldOutSHD.append(x)
+
+for x in HoldOutSHD:
+	ShdEng = cmds.listConnections(x,type="shadingEngine") 
+	print(ShdEng)
+	try:
+		for i in cmds.sets(ShdEng,query=True): 
+			if cmds.objectType(i) == 'mesh':
+				MeshOBJ.append(i) 
+	except:
+		pass
+
+cmds.select(MeshOBJ,replace=True)
+
+
+
+
+## CreateWhite SurFace
+if cmds.objExists("WhiteSurface")==True:
+	cmds.sets(cmds.listRelatives(cmds.ls(sl=True),ad=True,type='mesh',fullPath=True), e=True, forceElement='WhiteSurfaceSG')
+else:
+	SurfaceSHD = mel.eval('mrCreateCustomNode -asShader "" core_surface_shader;')
+	cmds.rename(SurfaceSHD,'WhiteSurface')
+	cmds.rename(cmds.listConnections('WhiteSurface',type='shadingEngine')[0],'WhiteSurfaceSG')
+	
+	cmds.sets(cmds.listRelatives(cmds.ls(sl=True),ad=True,type='mesh',fullPath=True), e=True, forceElement='WhiteSurfaceSG')
+   
+		
+
+  
+##select Lambert Obj
+import maya.cmds as cmds
+#lambertObj = [x for x in cmds.sets('initialShadingGroup', q = True) if cmds.objectType(x) == 'mesh']
+
+lambertObj = []
+
+for i in cmds.sets('initialShadingGroup', q = True):
+	if cmds.objectType(i) == 'mesh' and not 'CArch' in i:
+		lambertObj.append(i)
+
+
+if lambertObj:
+	cmds.select(lambertObj,replace = True)
+else:
+	cmds.warning("NO Lambert OBJ")
+
+
+
+problem=[]
+for x in lambertObj:
+	x = cmds.listRelatives(x,p=True)[0]
+	if not "CArch" in x and not "horeline"in x:
+		problem.append(x)
+
+if problem:
+	print(1)        
+	for r in problem:
+		print(r.split('|')[-1])
+
+
+shadingEngines = [cmds.listConnections(geo, type = 'shadingEngine')[0] for geo in non_animated_geo if cmds.listConnections(geo, type = 'shadingEngine')] if non_animated_geo else None
+	shadingEngines = list( set( shadingEngines ) ) if shadingEngines else None
+	core_materials = [cmds.listConnections(se, type = 'core_material')[0] for se in shadingEngines if cmds.listConnections(se, type = 'core_material')] if shadingEngines else None
+	[(cmds.setAttr('%s.ao_enable_overrides' % mat, 1), cmds.setAttr('%s.ao_override_spread' % mat, 90), cmds.setAttr('%s.ao_override_samples' % mat, 24), cmds.setAttr('%s.ao_override_distance' % mat, 1000)) for mat in core_materials] if core_materials else None
+	
+	
+
+
+import os
+from mentalcore import mapi
+def setBGHills():
+	FilePath = 'I:/bubblebathbay/assets/LibraryAsset/LIB_WORLD_BGhill/SRF/publish/maya/'
+	File = os.listdir(FilePath)
+	Latest = 0
+	Num = 0
+	BasicPasses=["ao","beauty","colour","depth_norm","diffuse","environment","facing_ratio","incandescence","indirect","reflection","refraction","specular"]
+	Members = ["LIB_WORLD_BGhills_hrc","LIGHTS_hrc"] if cmds.objExists("LIGHTS_hrc") else ["LIB_WORLD_BGhills_hrc"]
+
+	for v in File:
+		Num = v.split('.')[-2].lstrip("v") if int(v.split('.')[-2].lstrip("v")) > Latest else Num
+		Latest = int(Num)
+
+	Version = "%.3d" %Latest
+
+	if cmds.objExists("LIB_WORLD_BGhills_hrc")==False:     
+		cmds.file('I:/bubblebathbay/assets/LibraryAsset/LIB_WORLD_BGhill/SRF/publish/maya/LIBWORLDBGhill.v%s.mb' %Version,i=True )  
+
+	if cmds.objExists("LIB_WORLD_BGhills_hrc"):    
+		cmds.setAttr("LIB_WORLD_BGhills_hrc.visibility",0)
+		if cmds.objExists("BGHills_LYR")==False:         
+			cmds.createRenderLayer(n="BGHills_LYR")
+		cmds.editRenderLayerMembers("BGHills_LYR",Members,noRecurse=True)
+		cmds.editRenderLayerGlobals(currentRenderLayer="BGHills_LYR")
+		
+		cmds.setAttr("LIB_WORLD_BGhills_hrc.visibility",1)
+		
+	if cmds.objExists("BGHills_LYR"):
+		for x in BasicPasses:
+			mapi.associate_pass(x,"BGHills_LYR")      
+	
+	for mesh in cmds.listRelatives("LIB_WORLD_BGhills_hrc",ad=True,type='mesh',fullPath=True):
+	if not '%s.miSubdivApprox':
+		cmds.addAttr(mesh,longName="miSubdivApprox",dataType="string")
+	try:
+		cmds.connectAttr('auto_mrSubdAppx.message','%s.miSubdivApprox' %mesh)
+	except:
+		pass
+
+
+
+
+import maya.cmds as cmds
+MMM=[]
+for mesh in cmds.listRelatives("ENV_MIDDLEHARBOUR_EAST_STATIC_ABC_STATIC_CACHES_hrc",ad=True,type='mesh',fullPath=True):
+	if not ("vine" in mesh.lower() or "bush" in mesh.lower() or "leaf" in mesh.lower() or "plant" in mesh.lower() or "FWB_terrain001_geo" in mesh or "HC_terrain001_East_geo" in mesh or "AI_" in mesh) or "treebush" in mesh.lower():
+		#print(mesh)
+		MMM.append(mesh)
+		#cmds.connectAttr('auto_mrSubdAppx.message','%s.miSubdivApprox' %mesh)       
+KKK=cmds.listRelatives(MMM,p=True,fullPath=True,type="transform")       
+cmds.select(KKK,replace=True)
+
+
+
+
+##fetch toots eyebrow Shader
+SelectedMesh = cmds.ls(sl=True,long=True)
+TootsEyeBrown = filter(lambda x: "Muddles" in x and "eyebrow" in x, SeletedMesh)
+if not TootsEyeBrown:
+	cmds.warning("Please select Toots's eyebrown")
+else:
+	cmds.delete("CHARToots_Eyebrown") if cmds.objExists("CHARToots_Eyebrown") else None
+	cmds.delete("CHARToots_Eyebrown_SG") if cmds.objExists("CHARToots_Eyebrown_SG") else None
+	
+	cmds.file('T:/misc/Lighting-DoNotDelete/SomeShaders/TootsEyeBrownShd.ma',i=True )    
+	cmds.sets( TootsEyeBrown ,edit = True, forceElement = "CHARToots_Eyebrown_SG" )
+	
+
+##fetch Muddles eyebrow Shader
+SeletedMesh = cmds.ls(sl=True,long=True)
+MuddlesEyeBrown = filter(lambda x: "Muddles" in x and "eyebrow" in x, SeletedMesh)
+if not MuddlesEyeBrown:
+	cmds.warning("Please select Muddles's eyebrow")  
+else:
+	cmds.delete("CHARMuddles_Eyebrown") if cmds.objExists("CHARMuddles_Eyebrown") else None
+	cmds.delete("CHARMuddles_Eyebrown_SG") if cmds.objExists("CHARMuddles_Eyebrown_SG") else None
+	
+	cmds.file('T:/misc/Lighting-DoNotDelete/SomeShaders/MuddlesEyeBrownShd.ma',i=True )    
+	cmds.sets( MuddlesEyeBrown ,edit = True, forceElement = "CHARMuddles_Eyebrown_SG" )
+
+
+
+
+
+
+
+
+## Single Face HoldOut
+
+if len(cmds.ls(sl=True)) == 1:
+    
+    SelectedOBJ = cmds.ls(sl=True,l=True,type='transform')[0]
+    originalENG = cmds.listConnections(cmds.listRelatives(SelectedOBJ,ad=True,type="mesh")[0],type='shadingEngine')[0]      
+    originalSHD = filter(lambda x: "Condition" in x or cmds.nodeType(x)=='core_material',cmds.listConnections(originalENG))[0]
+    if cmds.nodeType(originalSHD)=='core_material':
+        EnginePlug = cmds.listConnections(originalSHD,type='shadingEngine',plugs=True,d = True,s =True)
+        MaterialPlug= cmds.listConnections(originalENG,type='core_material',plugs=True,d = True,s =True)[0]
+        ###################################
+        ## create source
+        Condition = cmds.shadingNode('condition', asUtility = True )
+        cmds.rename(Condition,originalSHD+'_Condition')
+        sampleInfo = cmds.shadingNode('samplerInfo', asUtility = True )
+        cmds.rename(sampleInfo,originalSHD+'_Info')        
+        BlockSSHD = mel.eval('mrCreateCustomNode -asShader "" core_surface_shader;')
+        cmds.rename(BlockSSHD,originalSHD+'_BlockSSHD')
+        cmds.rename(cmds.listConnections(originalSHD+'_BlockSSHD',type='shadingEngine')[0],originalSHD+'_BlockSSHDSG')
+        cmds.setAttr(originalSHD+"_BlockSSHD.output_override",1)
+        
+        ###################################
+        ## set up connection
+        cmds.connectAttr("%s.outValue" %originalSHD, originalSHD+'_Condition.colorIfTrue', f=True)
+        cmds.connectAttr(originalSHD+'_BlockSSHD.outValue', originalSHD+'_Condition.colorIfFalse', f=True)       
+        cmds.connectAttr(originalSHD+'_Info.flippedNormal',originalSHD+'_Condition.firstTerm')
+        for x in EnginePlug:        
+            cmds.disconnectAttr(MaterialPlug,x)
+        cmds.connectAttr(originalSHD+'_Condition.message', originalENG+'.surfaceShader', f=True)
+        
+        cmds.sets(SelectedOBJ, e=True, forceElement=originalENG)
+        cmds.select(SelectedOBJ)
+        cmds.warning("term 1")
+    elif "Condition" in originalSHD:
+        
+        HoldOutPlug = originalSHD.split("_Condition")[0]+'_BlockSSHD.outValue'
+        ShaderPlug = originalSHD.split("_Condition")[0]+'.outValue'
+        Condition_F = originalSHD+".colorIfFalse"
+        Condition_T = Condition_F.replace("colorIfFalse",'colorIfTrue')
+        if "False" in cmds.listConnections(HoldOutPlug,type="condition",plugs=True)[0]:
+            cmds.warning("term 2")
+            cmds.disconnectAttr(HoldOutPlug,Condition_F)
+            cmds.disconnectAttr(ShaderPlug,Condition_T)
+            cmds.connectAttr(HoldOutPlug,Condition_T)
+            cmds.connectAttr(ShaderPlug,Condition_F)
+        else:
+            cmds.warning("term 0")
+            cmds.delete(originalSHD.split("_Condition")[0]+'_BlockSSHD')
+            cmds.delete(originalSHD.split("_Condition")[0]+'_Info')
+            cmds.delete(originalSHD.split("_Condition")[0]+'_Condition')
+            cmds.connectAttr(originalSHD.split("_Condition")[0]+'.message', originalENG+'.miMaterialShader', f=True)
+                  
+                        
+else:
+    cmds.warning('please select only one OBJ...')
+    
+#print cmds.layoutDialog(ui=checkboxPrompt)
+    
+
+
+
+
+
+
+		
+
+
+									  
+
