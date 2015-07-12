@@ -1,0 +1,140 @@
+
+
+class AutoVivifications(dict):
+	"""Implementation of perl's autovivification feature."""
+	def __getitem__(self, item):
+		try:
+			return dict.__getitem__(self, item)
+		except KeyError:
+			value = self[item] = type(self)()
+			return value
+################################
+def nameTheRest():
+    for x in CtrlNaming.keys():
+        sortedList = CtrlNaming[x].keys()
+        sortedList.sort()
+        for i in sortedList:
+            type = cmds.nodeType(i)
+            NewName = NodeTypeHead[type]+"_"+ x.split("_",1)[-1]
+            count = 0
+            while cmds.objExists(NewName+"_"+Alpha[count]):
+                count += 1
+            else:
+                cmds.rename(i,NewName+"_"+Alpha[count],ignoreShape=True)
+
+#########################
+def textFldAndName(x):
+	NodeTypeHead[x]= NodeTypeHead[x]
+	cmds.textFieldGrp(editable =True,tx= NodeTypeHead[x] ,width=100,tcc=functools.partial(Anotherfunction,x))
+
+#########################
+def function(*args):
+	args = str(args).strip("('u',)")
+	print args
+	TempKey = Head[-1]
+	cmds.textFieldGrp(Result, edit=True, text=TempKey+"_"+str(args))
+	Node.append(args)
+######################### 
+def Anotherfunction(type,*args):
+	args = str(args).strip("('u',)")
+	print args
+	TempResult = Node[-1]#if len(Node)>0 else ""
+	cmds.textFieldGrp(Result, edit=True, text=str(args)+"_"+TempResult)
+	NodeTypeHead[type] = args
+	Head.append(args)
+#########################
+def OffWindow():
+    cmds.deleteUI("NameTheRest")
+#########################
+lll= []      
+import maya.cmds as cmds
+import string
+import re
+import functools
+
+###  Name Variable
+
+CtrlNaming = AutoVivifications()
+Alpha = list(string.lowercase)
+NodeType = []
+## Functions
+## set dict
+AllKey = [x for x in cmds.ls(sl=True)]
+
+for key in AllKey:
+	## relataives
+	AddOnList = []   
+	constrainObj = cmds.listConnections(key)
+	constrainObj = filter(lambda x: "onstraint" in cmds.nodeType(x),constrainObj)   
+	constrainObj2=[x for x in cmds.listConnections(constrainObj,d=True) for i in cmds.ls(sl=True) if i != x] if len(constrainObj) > 0 and constrainObj else None 
+	[AddOnList.append(x) for x in constrainObj+constrainObj2 if x not in AddOnList] if constrainObj and constrainObj else None
+	keyValue = AddOnList + cmds.listHistory(key,future=False,ac=True,ag=True)
+	for x in keyValue:
+		CtrlNaming[key][x] = cmds.nodeType(x)
+	
+	  
+[NodeType.append(x) for x in CtrlNaming.values()[0].values() if x not in NodeType]
+NodeTypeHead = AutoVivifications()
+for x in NodeType:
+	if x == 'transform':
+		NodeTypeHead[x] = "Ctrl"
+	elif 'onstraint' in x :
+		NodeTypeHead[x] = "Node"
+	elif x == "nurbsCurve" :
+		NodeTypeHead[x] = "Cv"
+	elif x == "cluster" :
+		NodeTypeHead[x] = "Clst" 
+	elif x == "clusterHandle":
+		NodeTypeHead[x] = "ClstH"     
+	else:
+		NodeTypeHead[x] = "gg"
+
+##Variable
+#Result = "NiHaoMa_r_KIaliam"
+Key = CtrlNaming.keys()
+TempKey = [Key[0].split("_",1)[-1]]
+OriginalName = [x for x in CtrlNaming][0]
+Head = NodeTypeHead.values()
+Node = list(OriginalName.split("_",1))
+AllType = NodeType
+AllNodeHead = []
+numOfType= len(AllType)
+#########################
+
+if cmds.window("NameTheRest",q=True,exists=True):
+	cmds.deleteUI("NameTheRest")
+	#cmds.windowPref("NameTheRest", remove = True)
+#cmds.windowPref("NameTheRest", remove = True)    
+cmds.window("NameTheRest",width = 300 )
+cmds.columnLayout("firstLayout", adjustableColumn=True,columnOffset = ('both', 5), width = 380,columnAlign = 'left',cat=["left",-60])
+
+Original = cmds.textFieldGrp(l="OriginalName", editable =False,tx=OriginalName)
+KeyWord = cmds.textFieldGrp(l="KeyWord",editable =True,tx=OriginalName.split("_",1)[-1],ip=0,tcc=functools.partial(function))
+
+cmds.scrollLayout("secondLayout",parent="firstLayout",sp="down")
+cmds.columnLayout( height = 10,parent = "secondLayout")
+ml=[]
+cmds.rowColumnLayout(numberOfColumns = 2, columnAlign = ([3, 'center']),cs = [1,138],co = [2,"left",39],parent = "secondLayout",rat=[numOfType,"bottom",10])
+HeadOutPut = range(1,len(AllType)+1)
+
+#[[cmds.button(label = x,align='center',height = 20,width=100,enable=False),cmds.textFieldGrp( editable =True,tx= NodeTypeHead[x] ,width=100,tcc=functools.partial(Anotherfunction))] for x,y in zip(AllType,range(1,len(AllType)+1))]
+
+[[cmds.button(label = x,align='center',height = 20,width=100,enable=False),textFldAndName(x)] for x,y in zip(AllType,range(1,len(AllType)+1))]
+
+cmds.columnLayout("thirdLayout",adjustableColumn=True, parent = "firstLayout",height=100)
+
+tempResult = cmds.textFieldGrp(KeyWord,q = True, text =True)
+Result = cmds.textFieldGrp(l="Result",editable =True,tx=NodeTypeHead.values()[0]+"_"+tempResult,ip=0,parent="thirdLayout")
+
+cmds.rowColumnLayout(numberOfColumns = 2, columnAlign = ([3, 'center']),cs = [1,56],parent = "thirdLayout",rat=[1,"top",30])
+cmds.button(label="OK",w=380/2,command = 'nameTheRest(),OffWindow()')
+cmds.button(label="Cancel",align="center",w=380/2,command = 'OffWindow()')
+
+cmds.showWindow()
+
+#cmds.textFieldGrp(KeyWord, q=True, text=True)
+
+
+
+
+
